@@ -1,11 +1,12 @@
 from flask import Flask, request, jsonify
 import sqlite3 as sql
-import os
-from dotenv import load_dotenv
+from flask_cors import CORS
 
 # Get a Flask instance and load environment variables
 app = Flask(__name__)
-load_dotenv()
+
+# Enable CORS for all routes
+CORS(app)
 
 # Return constants
 HTTP_OK = 200
@@ -13,10 +14,10 @@ HTTP_BAD_REQUEST = 400
 HTTP_ERROR = 500
 
 # Get the database name from the environment variables
-DATABASE = os.getenv('DATABASE_NAME')
+DATABASE_NAME = "transactions"
 
 # Create or connect to a database, and create a table if it doesn't exist
-conn = sql.connect(DATABASE + ".db", check_same_thread=False)
+conn = sql.connect(DATABASE_NAME + ".db", check_same_thread=False)
 cursor = conn.cursor()
 cursor.execute('''
                CREATE TABLE IF NOT EXISTS transactions 
