@@ -32,7 +32,7 @@ Activate the virtual environment:
 Install necessary dependencies:
 
 ```bash
-pip install requirements.txt
+pip install -r requirements.txt
 ```
 
 Run the server:
