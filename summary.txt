@@ -1,0 +1,55 @@
+----------------------------------------------------
+--Fetch Backend Internship Challenge - RESTful API--
+----------------Candidate: Lam Pham-----------------
+-----------Email: lamphamthedev@gmail.com-----------
+----------------------------------------------------
+
+1. Why did you choose the tools, libraries, and language you used for the coding exercise?
+
+Tools and languages I used:
+
+Server Language: Python
+ Libraries:
+ - Flask: backend
+ - SQLite: database
+Additional Tools:
+ - Postman: API testing
+
+I chose a Flask backend because I have had done multiple microservices using Flask for my projects. The simple syntax of Flask combined with the ease-of-usage of Python both for development and deploying makes this API very simple and easy to ship - perfect for a proof-of-concept application.
+
+In addition, SQLite is by default integrated into Python, so the project does not need to connect or use any external database tools.
+
+Finally, Postman allows very simple testing of the API, reducing the need of Python unit tests (reduce, not eliminate! If I had more time, I would have written some Flask unit tests.)
+
+2. What are the advantages and disadvantages of your solution?
+
+Solution overview:
+ - We create a SQL table with 5 fields (id - primary key int auto increment, payer - string, points - int, used - int default 0, timestamp - string).
+  + As I looked at the examples, I saw that the "add" call might add a negative transaction. In that case, I treated it as like a "spend" call, only that we only spend from that specific payer. We still add that transaction to the table for easy history logging and tracking.
+  + The 'used' field tracks how much of the points has any "spend" calls (or negative "add" calls) used. For negative transactions, 'used' is always 0. For other transactions, 'used' should never exceeds 'points'.
+  + The 'id' field is used to track each transaction and update it accordingly.
+  + We create an index at "timestamp" for faster queries, since most of our queries are sorted by timestamp.
+ - "/add" route:
+  + We first check the request body for misformed inputs. If the input is misformed, send back a HTTP_BAD_REQUEST.
+  + Then, we check that the transaction is positive or negative:
+  + If the transaction is positive, simply add the transaction to the database.
+  + If the transaction is negative, we use earlier transactions (by timestamp) of this specific payer to "spend" for this transaction. If there are not enough, send back a HTTP_BAD_REQUEST and don't add this transaction to the database; else, add the transaction.
+ - "/spend" route:
+  + We get all positive transactions that are not completely used (used = points), sorted by timestamps. Then, we add all the transactions up to check if we have enough points for spending. If we don't have enough, send back a HTTP_BAD_REQUEST.
+  + If we have enough points, create a map mapping buyers to the amount paid. As we iterate through transactions, we add and update new buyers and their amounts.
+ - "/balance" route:
+  + We simply use a SQL query to aggregate balances of all users.
+ - In addition, there are the "/reset" route to drop and recreate the table, and the "/view" route to view all rows in the table, for easy data manipulation and view.
+
+Some of the solution's advantages:
+ - Edge cases handling: The solution handles misformed request bodies, returning a HTTP_BAD_REQUEST if the request body misses some fields or is not formatted in JSON format. In addition, the solution also handles negative transactions and works when calls have timestamps not in sorted order.
+ - Optimized for time: The solution is fast because the table has an index for 'timestamp', eliminating the need to sort everytime we call '/spend'. In addition, we optimize the SQL queries so that only rows that will affect results will be selected, and we only project needed columns.
+
+Some of the solution's disadvantages:
+ - SQLite and Flask: As SQLite is file-based, and I set the flag of check_same_thread to False, there might be problems with concurrency and scalability.
+ - Space optimizations: All my SQL calls use fetch_all(), which returns the entire selected result as an array of rows to Python. This will be optimized for time, but we use more memory space.
+
+3. What has been a favorite school/personal project thus far? What about it that challenged you?
+My favorite personal project that I’ve had the chance to work on was Young Heroes - a project that my team of 4 created in the HopHacks hackathon. Inspired from the problem of children learning to recognize and communicate emergencies, we created two features - an AI-powered 911 Call Simulation and two learning modules that generate emergency scenarios. I primarily worked on the backend systems, mainly creating the Python Flask server and refining the 911 simulation AI. The app got third place in the hackathon, and from the app, I learned a lot about collaborative software design and presentations. 
+
+The biggest challenge for me was optimizing the API calls for speed. I had to optimize my GPT queries to have as few tokens as possible, and restrict the output size so that the speech-to-text and text-to-speech models do not have to handle large inputs. In the end, I was able to optimize the entire backend process from 10 seconds to 3.5 seconds, making the voice call simulation as seamless as possible. I hope that with Fetch I can solve more challenges like this, but in a real-life development environment and much larger scale!

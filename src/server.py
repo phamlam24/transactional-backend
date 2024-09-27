@@ -168,7 +168,7 @@ def spend():
     payers_list = [{'payer': key, 'points': value} for key, value in payers_map.items()]
     return jsonify(payers_list), HTTP_OK
 
-@app.route('/balance')
+@app.route('/balance', methods=['GET'])
 def balance():
     # Fetch points and used points from the transactions table. Do not count any transaction with negative points
     rows = cursor.execute('''SELECT payer, SUM(points - used) 
@@ -198,7 +198,7 @@ def reset():
     return 'Transactions table successully resetted', HTTP_OK
 
 # An additional route to fetch all rows from the transactions table and turn into a JSON object
-@app.route('/view')
+@app.route('/view', methods=['GET'])
 def view():
     rows = cursor.execute('SELECT * FROM transactions').fetchall()
     transactions = []
